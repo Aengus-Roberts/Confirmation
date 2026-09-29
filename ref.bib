@@ -60,8 +60,6 @@ author = {M. Raissi and P. Perdikaris and G.E. Karniadakis}
 
 @article{E_DRM,
 title = "The Deep Ritz Method: A Deep Learning-Based Numerical Algorithm for Solving Variational Problems",
-abstract = "We propose a deep learning-based method, the Deep Ritz Method, for numerically solving variational problems, particularly the ones that arise from partial differential equations. The Deep Ritz Method is naturally nonlinear, naturally adaptive and has the potential to work in rather high dimensions. The framework is quite simple and fits well with the stochastic gradient descent method used in deep learning. We illustrate the method on several problems including some eigenvalue problems.",
-keywords = "Deep Ritz Method, Eigenvalue problems, PDE, Variational problems",
 author = "E. Weinan and Bing Yu",
 note = "Publisher Copyright: {\textcopyright} 2018, School of Mathematical Sciences, University of Science and Technology of China and Springer-Verlag GmbH Germany, part of Springer Nature.",
 year = "2018",
@@ -89,14 +87,21 @@ number = "1",
   url = {https://doi.org/10.4208/cicp.OA-2020-0193}
 }
 
-@misc{ShinZhangKarniadakis_ErrorEstimates,
-      title={Error estimates of residual minimization using neural networks for linear PDEs}, 
-      author={Yeonjong Shin and Zhongqiang Zhang and George Em Karniadakis},
-      year={2023},
-      eprint={2010.08019},
-      archivePrefix={arXiv},
-      primaryClass={math.NA},
-      url={https://arxiv.org/abs/2010.08019}, 
+@ARTICLE{ShinZhangKarniadakis_ErrorEstimates,
+       author = {{Shin}, Yeonjong and {Zhang}, Zhongqiang and {Karniadakis}, George Em},
+        title = "{Error estimates of residual minimization using neural networks for linear PDEs}",
+      journal = {arXiv e-prints},
+     keywords = {Mathematics - Numerical Analysis, 65M12, 41A46, 65N30, 35J25, 35S15},
+         year = 2020,
+        month = oct,
+          eid = {arXiv:2010.08019},
+        pages = {arXiv:2010.08019},
+          doi = {10.48550/arXiv.2010.08019},
+archivePrefix = {arXiv},
+       eprint = {2010.08019},
+ primaryClass = {math.NA},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2020arXiv201008019S},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
 }
 
 @article{MishraMolinaro_GenErr,
@@ -110,12 +115,11 @@ number = "1",
     month = {01}
     }
     
-@misc{ZhaoLuo_TrainingConvergence,
+@article{ZhaoLuo_TrainingConvergence,
       title={Convergence Guarantees for Gradient-Based Training of Neural PDE Solvers: From Linear to Nonlinear PDEs}, 
       author={Wei Zhao and Tao Luo},
       year={2025},
-      eprint={2505.14002},
-      archivePrefix={arXiv},
+      journal = {arXiv preprint arXiv:2505.14002},
       primaryClass={math.NA},
       url={https://arxiv.org/abs/2505.14002}, 
 }
@@ -132,12 +136,11 @@ journal = {Proceedings of the Northern Lights Deep Learning Workshop},
 doi = {10.7557/18.6800}
 }
 
-@misc{KingmaBa_Adam,
+@article{KingmaBa_Adam,
       title={Adam: A Method for Stochastic Optimization}, 
       author={Diederik P. Kingma and Jimmy Ba},
       year={2017},
-      eprint={1412.6980},
-      archivePrefix={arXiv},
+      journal ={ arXiv preprint arXiv:1412.6980},
       primaryClass={cs.LG},
       url={https://arxiv.org/abs/1412.6980}, 
 }
@@ -209,11 +212,11 @@ doi = {10.1016/j.cma.2025.118308}
   url = 	 {https://proceedings.mlr.press/v235/rathore24a.html}
 }
 
-@misc{BoostedPINNs,
+@article{BoostedPINNs,
       title={Variational Boosting for Physics-Informed Neural Networks}, 
       author={Pavlos Protopapas and Kaylee Vo},
       year={2026},
-      eprint={2607.23940},
+      journal ={arXiv preprint arXiv:2607.23940},
       archivePrefix={arXiv},
       primaryClass={cs.LG},
       url={https://arxiv.org/abs/2607.23940}, 
@@ -229,4 +232,25 @@ doi = {10.1016/j.cma.2025.118308}
     pages = {119-150},
     year = {2026},
     month = {04},
+}
+
+@article{Adde_LatentPDE,
+      title={Latent PDE mapping for efficient physics-informed learning across geometries with limited data}, 
+      author={Ingvild Askim Adde and Mary M. Maleckar and Gabriel Balaban},
+      year={2026},
+      journal = {arXiv preprint arXiv:2607.22215},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2607.22215}, 
+}
+
+@article{CeasLemma,
+  author  = {C{\'e}a, Jean},
+  title   = {Approximation variationnelle des probl{\`e}mes aux limites},
+  journal = {Annales de l'Institut Fourier},
+  volume  = {14},
+  number  = {2},
+  pages   = {345--444},
+  year    = {1964},
+  doi     = {10.5802/aif.181}
 }
