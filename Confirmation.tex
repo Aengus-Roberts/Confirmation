@@ -1,5 +1,5 @@
 \documentclass[11pt, onecolumn]{report}
-\include{setup}
+\input{setup}
 
 \title{\textbf{Confirmation Report}}
 \author{Student: Aengus Roberts\\[0.5em]
@@ -33,7 +33,7 @@ This report contains 5 main sections (labelled as Chapters), which are briefly o
 
 \begin{enumerate}
 	\item \textbf{Reliable DRM Training Paper} \\ 
-	I am currently in the process of writing up a paper based on my research with Professor Budd over the course of the last year. I have presented this work at a couple of conferences (REMODEL 2026, SciCADE 2026) and am formalising this work. I believe the paper provides a good introduction to my research: both in terms of the area of research; Physics Informed Machine Learning (PIML), an area of research interested in implementing known mathematical and physical knowledge into machine learning; and our approach towards it. Because of this, I have included this paper in its whole as a summary of a majority of the research we have performed so far.
+	I am currently in the process of writing a paper based on my research with Professor Budd over the course of the last year. I have presented this work at a couple of conferences (REMODEL 2026, SciCADE 2026) and am formalising this work. I believe the paper provides a good introduction to my research: both in terms of the area of research; Physics Informed Machine Learning (PIML), an area of research interested in implementing known mathematical and physical knowledge into machine learning; and our approach towards it. Because of this, I have included this paper in its whole as a summary of a majority of the research we have performed so far.
 	\item \textbf{Current Research} \\
 	This section focuses on current areas of research building from the work outlined in Chapter \ref{chap:Paper}. There are currently two main areas of research, each with their own section within this Chapter. 
 	The first being a collaborative piece of work between M4DL researchers and researchers at Simon Fraser University (SFU) focusing on the application of ML to Eigenvalue problems on complex domains. 
@@ -105,6 +105,7 @@ This optimisation gap is especially relevant for the DRM. For a symmetric coerci
 Our aim is therefore not to prove convergence for general PINNs or deep networks. We instead identify cases where convergence can be observed by isolating these mechanisms for shallow ReLU-type networks, where biases admit an explicit interpretation as knot locations. This structure permits separate treatment of conditioning, coefficient optimisation and knot placement.
 
 \subsection{Related Works}
+\label{sec:RelatedWorks}
 
 Empirical studies have shown that the expressivity of a neural network does not guarantee that a PINN can be trained accurately. Krishnapriyan et al.\ \cite{Krishnapriyan_PINNFailure} consider equations containing convection, reaction and diffusion terms. They show that standard PINNs can fail even when the network is sufficiently expressive. This failure is instead linked to the conditioning and optimisation of the PDE-based loss function.
 
@@ -207,8 +208,6 @@ The optimiser and preconditioner have a similarly limited role. They can improve
 
 The main structural observation is that the weights and biases of a shallow ReLU network play different mathematical roles. The FKS formulation from Appella et. al. \cite{AppellaEtAl} helps clarify this where the weights $\mathbf{w}$ act as basis coefficients and the biases determine the knot locations $\mathbf{k}$. Joint training couples these two roles. This introduces a free-knot optimisation problem in which knots can move, collide or leave the domain.
 
-\\
-
 Our main algorithmic contribution is to separate this convex weight problem from the nonlinear placement of the knots. The weights are first trained with the knots held fixed. The knots are then updated using an equidistribution principle, building on the FKS method of Appella et al.\ \cite{AppellaEtAl}. For piecewise linear $L^2$ approximation, the corresponding monitor is proportional to $|u''|^{2/5}$. In the PDE setting, this monitor must be estimated from the current approximation and the second derivative $u''$ can be found by in terms of the lower order derivatives of the approximation. This rearranging methodology allows the admission of a FKS architecture as direct computation of the second derivative is not required. The two steps are repeated until the weights and knot locations stabilise.
 
 This separation gives two distinct convergence statements. For each fixed set of admissible knots, the weight optimisation converges to the unique minimiser of the discrete Ritz energy. Separately, equidistribution provides approximation estimates as the number of knots increases, subject to regularity and mesh assumptions. Together, these results give convergence when the knot sequence is suitably equidistributed and the quadrature rule resolves the resulting approximation space. They do not, without further assumptions, prove global convergence of every alternating weight--knot iteration.
@@ -223,9 +222,9 @@ The nonlinear part of the method is consequently moved into the placement of the
 
 
 \section{Shallow Deep Ritz Method}
-Here we i
+Here we present two example problems to help identify causes of training failure. Both of these problems have been chosen due to the issues they can cause ``classical'' numerical solvers. 
 
-\subsection{Toy Problem and Ritz Formulation}
+\subsection{Reaction-Diffusion Problem and Ritz Formulation}
 \label{sec:EllipticProblem}
 
 We consider the singularly perturbed reaction--diffusion problem
@@ -462,13 +461,30 @@ Galerkin orthogonality gives
 \end{equation}
 Thus, when the continuous energy is minimised exactly, the error is determined entirely by the approximation properties of \(V_h\).
 
-\subsection{Why Standard Training Fails}
+\subsection{Convection-Diffusion Problem}
+We also introduced the convection-diffusion problem
+\begin{equation*}
+-\varepsilon u''+u'=1,\qquad x\in(0,1),\qquad u(0)=u(1)=0,
+\end{equation*}
+with $\varepsilon=0.1$. 
+The analytical solution is
+\begin{equation*}
+u(x)=x-\frac{e^{x/\varepsilon}-1}{e^{1/\varepsilon}-1}.
+\end{equation*}.
 
+To obtain a variational minimisation problem, we multiply the equation by the integrating factor $e^{-x/\varepsilon}$, giving the energy
+\begin{equation*}
+E[u]=\int_0^1 e^{-x/\varepsilon}\left(\frac{\varepsilon}{2}(u')^2-u\right)\,dx.
+\end{equation*}
+This weight decreases by a factor of $e^{10}$ across the domain. Consequently, variations in coefficients associated with localised basis functions near the outflow boundary contribute much less to the objective than comparable variations near the inflow boundary. This disparity can worsen conditioning and slow the optimisation of those coefficients, precisely where the boundary layer requires accurate resolution.
+
+
+\subsection{Why Standard Training Fails}
 Failure of standard training is often attributed to a single component of the method with common explanations including the optimiser, choice of activation function, network architecture, and number/placement of collocation or quadrature points. Methods addressing these issues can improve training, but do not by themselves guarantee convergence.
 
 \
 
-Ill-conditioning can make the optimal network parameters difficult to obtain, even when the approximation space contains an accurate solution. Appella et al.~\cite{AppellaEtAl} demonstrate this distinction for shallow ReLU networks and their equivalent free-knot spline (FKS) representation: the two representations have the same expressivity, but substantially different conditioning. Figure~\ref{fig:elliptic-parameterisation} illustrates the practical effect for the reaction--diffusion problem. The ReLU approximations remain inaccurate with both fixed and jointly trained knots. The linear hat-function basis improves the approximations, with the closest agreement obtained using trainable knots. This comparison illustrates the importance of the coefficient parameterisation, rather than expressivity alone.
+Ill-conditioning can make the optimal network parameters difficult to obtain, even when the approximation space contains an accurate solution. Appella et al.~\cite{AppellaEtAl} demonstrate this distinction for shallow ReLU networks and their equivalent free-knot spline (FKS) representation: the two representations have the same expressivity, but substantially different conditioning. Figure~\ref{fig:relu_fks_comparison} illustrates the practical effect for the reaction--diffusion problem. The ReLU approximations remain inaccurate with both fixed and jointly trained knots. The linear hat-function basis improves the approximations, with the closest agreement obtained using trainable knots. This comparison illustrates the importance of the coefficient parameterisation, rather than expressivity alone.
 
 \begin{figure}[htbp]
     \centering
@@ -518,7 +534,7 @@ Ill-conditioning can make the optimal network parameters difficult to obtain, ev
     \label{fig:relu_fks_comparison}
 \end{figure}
 
-However, conditioning also depends on the differential operator and the loss. For the convection--diffusion problem, the integrating-factor energy introduces the weight $e^{-x/\varepsilon}$, producing large differences in the contribution of errors across the domain. Figure~\ref{fig:convection-training} shows that the FKS representation with jointly trained knots remains inaccurate for this problem, despite its success in Figure~\ref{fig:elliptic-parameterisation}. Energy natural gradient methods address the interaction between the objective and its parameterisation through a metric induced by the function-space Hessian~\cite{MullerZeinhofer_ENGD}. Related approaches address unequal learning rates: NTK-based loss weighting balances different loss components~\cite{wang2022ntk}, while Fourier-feature embeddings can alleviate spectral bias in multiscale problems~\cite{wang2021eigenvector}.
+However, conditioning also depends on the differential operator and the loss. For the convection--diffusion problem, the integrating-factor energy introduces the weight $e^{-x/\varepsilon}$, producing large differences in the contribution of errors across the domain. Figure~\ref{fig:fks_joint_failure} shows that the FKS representation with jointly trained knots remains inaccurate for this problem, despite its success in Figure~\ref{fig:relu_fks_comparison}. Energy natural gradient methods address the interaction between the objective and its parameterisation through a metric induced by the function-space Hessian~\cite{MullerZeinhofer_ENGD}. Related approaches address unequal learning rates: NTK-based loss weighting balances different loss components~\cite{wang2022ntk}, while Fourier-feature embeddings can alleviate spectral bias in multiscale problems~\cite{wang2021eigenvector}.
 
 \begin{figure}
     \centering
@@ -573,186 +589,8 @@ One route is a suitable initialisation within a region where convergence to an a
 
 
 \section{Split Deep Ritz Training}
-
-\subsection{Fixed Knot Optimisation}
-
-Let \(\mathbf k\in\mathcal K_N\) be any admissible knot sequence. During the coefficient step, \(\mathbf k\) is held constant and the approximation is written as
-\begin{equation*}
-    u_{\mathbf w,\mathbf k}(x)
-    =
-    \sum_{i=1}^Nw_i\phi_i(x).
-\end{equation*}
-The basis functions are now fixed and the map
-\begin{equation*}
-    \mathbf w
-    \longmapsto
-    u_{\mathbf w,\mathbf k}
-\end{equation*}
-is linear.
-
-Let \(a_{\varepsilon,h}\) and \(\ell_h\) denote the quadrature approximations of the bilinear and linear forms introduced in Section~2.1. The discrete Ritz energy is
-\begin{equation}
-    E_h(\mathbf w;\mathbf k)
-    =
-    \frac12
-    a_{\varepsilon,h}
-    (u_{\mathbf w,\mathbf k},u_{\mathbf w,\mathbf k})
-    -
-    \ell_h(u_{\mathbf w,\mathbf k})
-    =
-    \frac12\mathbf w^TA(\mathbf k)\mathbf w
-    -
-    \mathbf f(\mathbf k)^T\mathbf w,
-    \label{eq:fixed_knot_energy}
-\end{equation}
-where
-\begin{equation*}
-    A_{ij}(\mathbf k)
-    =
-    a_{\varepsilon,h}(\phi_j,\phi_i),
-    \qquad
-    f_i(\mathbf k)
-    =
-    \ell_h(\phi_i).
-\end{equation*}
-
-Assume that the basis functions are linearly independent and that the quadrature rule preserves coercivity on \(V_h(\mathbf k)\). Then \(A(\mathbf k)\) is symmetric positive definite. Consequently, \(E_h(\cdot;\mathbf k)\) is strictly convex and has the unique minimiser
-\begin{equation}
-    \mathbf w^\star(\mathbf k)
-    =
-    A(\mathbf k)^{-1}\mathbf f(\mathbf k).
-    \label{eq:fixed_knot_minimiser}
-\end{equation}
-The energy gap satisfies
-\begin{equation}
-    E_h(\mathbf w;\mathbf k)
-    -
-    E_h(\mathbf w^\star;\mathbf k)
-    =
-    \frac12
-    (\mathbf w-\mathbf w^\star)^T
-    A(\mathbf k)
-    (\mathbf w-\mathbf w^\star).
-    \label{eq:discrete_energy_gap}
-\end{equation}
-Thus, convergence of the coefficient vector is equivalent to convergence in the discrete energy norm.
-
-For example, gradient descent gives
-\begin{equation}
-    \mathbf w^{n+1}
-    =
-    \mathbf w^n
-    -
-    \eta
-    \left(
-        A(\mathbf k)\mathbf w^n-\mathbf f(\mathbf k)
-    \right).
-    \label{eq:fixed_knot_gradient_descent}
-\end{equation}
-For any initial value \(\mathbf w^0\), this iteration converges to \(\mathbf w^\star(\mathbf k)\) whenever
-\begin{equation*}
-    0<\eta<
-    \frac{2}{\lambda_{\max}(A(\mathbf k))}.
-\end{equation*}
-The rate depends on the condition number of \(A(\mathbf k)\). Preconditioning changes this rate, but not the location or uniqueness of the minimiser.
-
-When the Ritz functional is integrated exactly, \(A(\mathbf k)\) and \(\mathbf f(\mathbf k)\) are precisely the stiffness matrix and load vector of the \(P_1\) finite element method on the mesh \(\mathbf k\). The resulting approximation therefore satisfies
-\begin{equation*}
-    \|u-u_{\mathbf w^\star,\mathbf k}\|_\varepsilon
-    =
-    \inf_{v_h\in V_h(\mathbf k)}
-    \|u-v_h\|_\varepsilon.
-\end{equation*}
-With numerical quadrature, an additional consistency error remains.
-
-The coefficient step is therefore not a non-convex neural-network problem. It is a finite element linear system written as an optimisation problem. Replacing the linear solve by gradient descent does not change the underlying discrete problem and will usually be less efficient than a sparse direct solver. Its importance here is that convergence of this part of the training procedure can be guaranteed.
-
-This result does not yet guarantee convergence to the exact PDE solution. The approximation error depends on the number and placement of the knots, while the discrete solution also depends on the quadrature rule. The remaining nonlinear problem is therefore the selection of \(\mathbf k\), which is considered in the following subsection.
-
-
-
-\subsection{Equidistribution of Knots}
-
-The nonlinear part of the split method is the selection of the knot locations. Rather than minimising the Ritz energy directly with respect to \(\mathbf k\), we distribute the knots using an equidistribution principle. This replaces the joint weight--knot optimisation by a separate mesh-generation problem.
-
-Let \(M:[0,1]\rightarrow\mathbb R_{>0}\) be a positive monitor function. The knots are equidistributed when
-\begin{equation}
-    \int_{k_i}^{k_{i+1}}M(x)\,dx
-    =
-    \frac{1}{N+1}
-    \int_0^1M(x)\,dx,
-    \qquad i=0,\ldots,N.
-    \label{eq:knot_equidistribution}
-\end{equation}
-Thus, each cell contains the same monitor mass. Regions in which \(M\) is large receive a greater density of knots.
-
-For piecewise linear interpolation, the leading local squared \(L^2\) error satisfies
-\begin{equation*}
-    \int_{k_i}^{k_{i+1}}
-    \left(u-\Pi_1u\right)^2\,dx
-    \approx
-    C h_i^5
-    \left|u''(k_{i+1/2})\right|^2.
-\end{equation*}
-Balancing this error between cells gives
-\begin{equation*}
-    h_i
-    \left|u''(k_{i+1/2})\right|^{2/5}
-    =
-    \text{constant}.
-\end{equation*}
-Following Appella et al.~\cite{AppellaEtAl}, we therefore use the regularised monitor
-\begin{equation}
-    M_\delta(x)
-    =
-    \left(
-        \delta^2+|u''(x)|^2
-    \right)^{1/5},
-    \qquad \delta>0.
-    \label{eq:fks_monitor}
-\end{equation}
-The regularisation prevents the monitor from vanishing in regions of low curvature and avoids the formation of arbitrarily large cells.
-
-The equidistribution equation can be solved through the cumulative monitor function
-\begin{equation*}
-    F_M(x)
-    =
-    \frac{
-        \displaystyle\int_0^xM_\delta(s)\,ds
-    }{
-        \displaystyle\int_0^1M_\delta(s)\,ds
-    }.
-\end{equation*}
-Since \(M_\delta>0\), \(F_M\) is strictly increasing. The knots are obtained from
-\begin{equation}
-    k_i
-    =
-    F_M^{-1}
-    \left(
-        \frac{i}{N+1}
-    \right),
-    \qquad i=1,\ldots,N.
-    \label{eq:monitor_inverse}
-\end{equation}
-In practice, \(M_\delta\) is evaluated on a fine auxiliary grid. Its cumulative integral is then approximated numerically and inverted by interpolation.
-
-The exact solution \(u\) is not available in the PDE setting. Moreover, a piecewise linear FKS has no classical second derivative at its knots and has zero second derivative within each cell. As a workaround for this, a rearranging of the differential equation can often represent the second derivative using the lower order terms of the equation. When this is not possible, one can move to an approximation of higher polynomial order. 
-
-The same construction extends to higher-order splines. For a degree-\(p\) interpolating spline, equidistribution of the leading squared \(L^2\) error gives
-\begin{equation*}
-    M_p(x)
-    \propto
-    \left|
-        u^{(p+1)}(x)
-    \right|^{2/(2p+3)}.
-\end{equation*}
-The appropriate monitor also depends on the norm being controlled. For example, a fourth-order PDE usually gives a Ritz functional involving second derivatives. A conforming discretisation then requires an \(H^2\) approximation, for which \(C^1\) cubic splines may be used. The monitor should in this case be derived from the corresponding \(H^2\) interpolation error rather than copied directly from the \(L^2\) formula above.
-
-Equidistribution determines a new admissible knot sequence for a given monitor. It does not by itself prove convergence of the complete alternating procedure, since the monitor is estimated from the current approximation and changes after each coefficient solve. The full weight--knot iteration is introduced in the following subsection.
-
 \subsection{Alternating Algorithm}
-
-The previous subsections separate the DRM training problem into two parts. For a given knot sequence, the coefficients are obtained from a strictly convex quadratic problem. The knots are then redistributed using a monitor function. These steps are alternated until both the approximation and knot locations stabilise.
+Section \ref{sec:RelatedWorks} separates the DRM training problem into two parts. For a given knot sequence, the coefficients are obtained from a strictly convex quadratic problem. The knots are then redistributed using a monitor function. These steps are alternated until both the approximation and knot locations stabilise.
 
 Let \(\mathbf k^n\) denote the knot sequence at iteration \(n\). The coefficient update is
 \begin{equation}
@@ -851,7 +689,7 @@ When the monitor is recovered from \(u_h^n\), convergence is conditional. Let
 \begin{equation*}
     \mathcal G(\mathbf k)
 \end{equation*}
-denote one complete coefficient, recovery and equidistribution update. Local convergence follows if \(\mathcal G\) maps an admissible neighbourhood into itself and is contractive there. This requires stable coefficient solves, stable derivative recovery and knot spacings bounded away from zero. These conditions are plausible for the elliptic problem considered here, but they do not currently give a global convergence result from arbitrary initial knots.
+denote one complete coefficient, recovery and equidistribution update. Local convergence follows if \(\mathcal G\) maps an admissible neighbourhood into itself and is contractive there. This requires stable coefficient solves, stable derivative recovery and knot spacings bounded away from zero. These conditions are plausible for the reaction-diffusion problem considered here, but they do not currently give a global convergence result from arbitrary initial knots.
 
 For the reaction--diffusion problem, the Ritz functional is symmetric and coercive. The coefficient step is therefore well posed for every admissible knot sequence. The monitor concentrates knots within the two boundary layers, while the cellwise quadrature resolves the resulting narrow cells. The numerical experiments show convergence for increasingly small values of \(\varepsilon\), consistent with the fixed-knot and equidistribution arguments above.
 
@@ -904,7 +742,7 @@ which in turn provides an energy functional of the form:
 The approximation uses a single hidden layer of piecewise-linear hat functions, constructed from ReLU activations, with widths of 100 and 50 for the stationary and time-dependent solvers, respectively. The coefficients are optimised using L-BFGS in most experiments and SSBroyden in the stationary Allen–Cahn experiment to illustrate flexibility in optimiser choice, with a learning rate of (0.01) throughout. The stationary solver performs 50 outer mesh-adaptation iterations with 50 SSBroyden calls per iteration, while the time-dependent solver uses 200 implicit Euler steps of size ($\Delta t=0.5$), each comprising 50 outer iterations with at most 25 L-BFGS iterations per outer iteration. Spatial integrals are approximated using three-point Gauss–Legendre quadrature on each current knot interval, with nodes obtained by mapping the roots of the degree-three Legendre polynomial onto that interval. All computations use double precision (float64) to reduce round-off error. Boundary conditions are imposed through squared Dirichlet or Neumann residuals at the boundary, with a penalty coefficient of 10 relative to the interior objective.
 
 
-\subsection{Elliptic Problem}
+\subsection{Reaction-Diffusion Problem}
 We consider the singularly perturbed reaction–diffusion problem
 \begin{equation*}
 -\varepsilon^2u''+u=1,\qquad x\in(0,1),\qquad u(0)=u(1)=0,
@@ -965,7 +803,7 @@ The signed-error profiles and error heatmap in Figure~\ref{fig:elliptic-time-dep
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.8\textwidth]{elliptic_time_dependent.png}
+    \includegraphics[width=\textwidth]{elliptic_time_dependent.png}
     \caption{Time-dependent reaction--diffusion problem with $\varepsilon=0.01$, homogeneous Dirichlet conditions and initial data $u(x,0)=\sin(\pi x)$. Top row: collocation (solid) and FKS (dashed) solutions at selected times; signed errors; error norms and the $L^2$ reference-refinement discrepancy. Bottom row: collocation solution; absolute FKS error; adaptive knot trajectories.}
     \label{fig:elliptic-time-dependent}
 \end{figure}
@@ -1099,7 +937,7 @@ To assess local conditioning, we compute the Hessian $H=\nabla_\theta^2\mathcal{
 \end{equation}
 where $\lambda_i$ are the Hessian eigenvalues and $\tau$ is the numerical threshold used to exclude near-zero eigenvalues. This measures the spread of curvature within the retained positive eigenspace; it does not describe negative-curvature or unresolved directions.
 
-Figures~\ref{fig:slit-conditioning-parameters} and \ref{fig:corner-conditioning parameters} plot $\kappa_+$ against the number of trainable parameters, with colour indicating depth and marker shape indicating width. Faint markers represent individual runs, while outlined markers show the median for each architecture. The results show a broad tendency towards poorer positive-subspace conditioning for larger networks, although the relationship is not monotone and substantial variation occurs between architectures and runs. Parameter count therefore does not fully describe the observed conditioning. These results motivate examining how depth and width affect the Hessian spectrum separately, alongside their effects on approximation accuracy.
+Figures~\ref{fig:slit-conditioning-parameters} and \ref{fig:corner-conditioning-parameters} plot $\kappa_+$ against the number of trainable parameters, with colour indicating depth and marker shape indicating width. Faint markers represent individual runs, while outlined markers show the median for each architecture. The results show a broad tendency towards poorer positive-subspace conditioning for larger networks, although the relationship is not monotone and substantial variation occurs between architectures and runs. Parameter count therefore does not fully describe the observed conditioning. These results motivate examining how depth and width affect the Hessian spectrum separately, alongside their effects on approximation accuracy.
 
 The apparent cutoff in the conditioning number near $10^{10}$ can be explained by a computational cutoff due to the size of the Hessian required for calculation which limits the range of the reported ratio. Similarly, a small value of $\kappa_+$ can occur when very few positive eigenvalues remain above the threshold. We therefore interpret this measure alongside the proportions of negative and near-zero eigenvalues, rather than as a standalone indicator of successful training. 
 
